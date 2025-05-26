@@ -14,7 +14,7 @@ The system uses:
 - **FAISS Indexing**: Fast similarity search and clustering of dense vectors
 - **Quarterly Updates**: Index stays synced with OpenAlex dataset snapshots
 
-The plugin connects to the hosted search interface via Gradio Client, requiring no API keys or authentication.
+The plugin connects to the search interface via [Gradio Client](https://www.gradio.app/guides/gradio-client-connecting-to-a-hugging-face-space), requiring no API keys but needs endpoint configuration.
 
 ## Usage
 
@@ -32,9 +32,30 @@ dify-plugin-daemon plugin package ./abstracts-index
 
 For more information, please refer to [Tool Plugin: Packing Plugin](https://docs.dify.ai/plugins/quick-start/develop-plugins/tool-plugin#packing-plugin).
 
-### Set Up Authorization
+### Set Up Configuration
 
-No authorization or API keys are required for this plugin. It connects directly to the publicly available abstracts-search service hosted on Hugging Face Spaces.
+While this plugin doesn't require API keys, you need to configure the Gradio endpoint to connect to the search service.
+
+You need to provide the following configuration:
+
+- **Gradio Endpoint**: The endpoint for the abstracts-search service
+
+**Recommended Options:**
+
+1. **Official Hosted Service** (Recommended): `colonelwatch/abstracts-index`
+   - Uses the official [Hugging Face Space](https://huggingface.co/spaces/colonelwatch/abstracts-index)
+   - No setup required, always up-to-date
+
+2. **Local Instance**: `http://localhost:7860`
+   - If you're running your own instance of the abstracts-search service
+   - Requires setting up the service locally
+
+3. **Custom Gradio Endpoint**: Any valid Gradio endpoint URL
+   - For other hosted instances or custom deployments
+
+During setup, the plugin will validate your endpoint configuration to ensure it can successfully connect to the abstracts-search service.
+
+For more information about Gradio endpoints, see the [Gradio Client documentation](https://www.gradio.app/guides/sharing-your-app#hosting-on-hf-spaces).
 
 ### Features
 
@@ -48,7 +69,7 @@ This plugin supports the following features:
 
 4. **Dual Format Output**: Returns results in both text and JSON formats for maximum compatibility
 
-5. **No Authentication Required**: Direct access without API keys or registration
+5. **No API Keys Required**: Direct access without API token authentication
 
 6. **Always Updated**: Index synchronized with quarterly OpenAlex dataset snapshots
 

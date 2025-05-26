@@ -14,7 +14,7 @@
 - **FAISS 索引**：密集向量的快速相似性搜索和聚类
 - **季度更新**：索引与 OpenAlex 数据集快照保持同步
 
-该插件通过 Gradio Client 连接到托管的搜索界面，无需 API 密钥或身份验证。
+该插件通过 [Gradio Client](https://www.gradio.app/guides/gradio-client-connecting-to-a-hugging-face-space) 连接到搜索界面，无需 API 密钥但需要端点配置。
 
 ## 使用方法
 
@@ -32,9 +32,30 @@ dify-plugin-daemon plugin package ./abstracts-index
 
 有关更多信息，请参阅[工具插件：打包插件](https://docs.dify.ai/zh-CN/plugins/quick-start/develop-plugins/tool-plugin#packing-plugin)。
 
-### 设置授权
+### 设置配置
 
-此插件无需任何授权或 API 密钥。它直接连接到托管在 Hugging Face Spaces 上的公开 abstracts-search 服务。
+虽然此插件不需要 API 密钥，但您需要配置 Gradio 端点以连接到搜索服务。
+
+您需要提供以下配置：
+
+- **Gradio 端点**：abstracts-search 服务的端点地址
+
+**推荐选项：**
+
+1. **官方托管服务**（推荐）：`colonelwatch/abstracts-index`
+   - 使用官方的 [Hugging Face Space](https://huggingface.co/spaces/colonelwatch/abstracts-index)
+   - 无需设置，始终保持最新
+
+2. **本地实例**：`http://localhost:7860`
+   - 如果您在本地运行自己的 abstracts-search 服务实例
+   - 需要在本地设置服务
+
+3. **自定义 Gradio 端点**：任何有效的 Gradio 端点 URL
+   - 用于其他托管实例或自定义部署
+
+在设置过程中，插件将验证您的端点配置，确保能够成功连接到 abstracts-search 服务。
+
+有关 Gradio 端点的更多信息，请参阅 [Gradio Client 文档](https://www.gradio.app/guides/sharing-your-app#hosting-on-hf-spaces)。
 
 ### 功能
 
@@ -48,7 +69,7 @@ dify-plugin-daemon plugin package ./abstracts-index
 
 4. **双格式输出**：以文本和 JSON 两种格式返回结果，最大程度兼容不同应用
 
-5. **无需身份验证**：无需 API 密钥或注册即可直接访问
+5. **无需 API 密钥**：无需 API 令牌身份验证即可直接访问
 
 6. **始终更新**：索引与 OpenAlex 数据集的季度快照保持同步
 
