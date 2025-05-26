@@ -50,7 +50,7 @@ jobs:
         id: package
         run: |
           cd $GITHUB_WORKSPACE
-          PACKAGE_NAME="${{ steps.get_basic_info.outputs.plugin_name }}-${{ steps.get_basic_info.outputs.version }}.difypkg"
+          PACKAGE_NAME="abstracts-index.difypkg"
           $RUNNER_TEMP/bin/dify-plugin-linux-amd64 plugin package . -o "$PACKAGE_NAME"
 
           echo "Package result:"
@@ -73,29 +73,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.get_basic_info.outputs.tag }}"
-          VERSION="${{ steps.get_basic_info.outputs.version }}"
           PACKAGE_NAME="${{ steps.package.outputs.package_name }}"
-          
-          # Create release notes
-          cat > release_notes.md << EOF
-          ## Abstracts Index Dify Plugin v${VERSION}
-          
-          ### Features
-          - Semantic search across 110 million academic publications
-          - Powered by abstracts-search with OpenAlex dataset
-          - Uses stella_en_1.5B_v5 model for embeddings
-          - FAISS indexing for fast similarity search
-          - Dual format output (text and JSON)
-          - No API keys required
-          
-          ### Installation
-          Download the \`${PACKAGE_NAME}\` file and upload it to your Dify platform.
-          
-          For detailed instructions, please refer to the [README](https://github.com/${{ github.repository }}/blob/main/abstracts-index/README.md).
-          EOF
           
           # Create release
           gh release create "$TAG" \
-            --title "Abstracts Index Plugin v${VERSION}" \
-            --notes-file release_notes.md \
+            --title "$TAG" \
             "./${PACKAGE_NAME}"
