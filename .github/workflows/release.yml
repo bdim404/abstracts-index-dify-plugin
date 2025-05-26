@@ -1,0 +1,80 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'abstracts-index/**'
+      - '.github/workflows/release.yml'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Extract version from manifest
+      id: get_version
+      run: |
+        VERSION=$(python -c "import yaml; print(yaml.safe_load(open('abstracts-index/manifest.yaml'))['version'])")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Download dify-plugin-daemon
+      run: |
+        wget https://github.com/langgenius/dify-plugin-daemon/releases/latest/download/dify-plugin-daemon-linux-amd64.tar.gz
+        tar -xzf dify-plugin-daemon-linux-amd64.tar.gz
+        chmod +x dify-plugin-daemon
+        
+    - name: Package plugin
+      run: |
+        ./dify-plugin-daemon plugin package ./abstracts-index
+        
+    - name: Delete existing release if exists
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG="${{ steps.get_version.outputs.tag }}"
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          echo "Release $TAG exists, deleting..."
+          gh release delete "$TAG" --yes
+          git push --delete origin "$TAG" || true
+        fi
+        
+    - name: Create new release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG="${{ steps.get_version.outputs.tag }}"
+        VERSION="${{ steps.get_version.outputs.version }}"
+        
+        # Create release notes
+        cat > release_notes.md << EOF
+        ## Abstracts Index Dify Plugin v${VERSION}
+        
+        ### Features
+        - Semantic search across 110 million academic publications
+        - Powered by abstracts-search with OpenAlex dataset
+        - Uses stella_en_1.5B_v5 model for embeddings
+        - FAISS indexing for fast similarity search
+        - Dual format output (text and JSON)
+        - No API keys required
+        
+        ### Installation
+        Download the \`abstracts-index.difypkg\` file and upload it to your Dify platform.
+        
+        For detailed instructions, please refer to the [README](https://github.com/${{ github.repository }}/blob/main/abstracts-index/README.md).
+        EOF
+        
+        # Create release
+        gh release create "$TAG" \
+          --title "Abstracts Index Plugin v${VERSION}" \
+          --notes-file release_notes.md \
+          ./abstracts-index.difypkg
