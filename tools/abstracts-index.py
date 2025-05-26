@@ -8,35 +8,35 @@ from gradio_client import Client
 class AbstractsIndexTool(Tool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
         try:
-            # 获取参数
+            # Get parameters
             query = tool_parameters.get("query", "")
             
             if not query:
-                yield self.create_text_message("错误: 查询参数不能为空")
+                yield self.create_text_message("Error: Query parameter cannot be empty")
                 return
             
-            # 从 provider 配置中获取 Gradio 端点
+            # Get Gradio endpoint from provider configuration
             gradio_endpoint = self.runtime.credentials.get("gradio_endpoint")
             if not gradio_endpoint:
-                yield self.create_text_message("错误: 未配置 Gradio 端点")
+                yield self.create_text_message("Error: Gradio endpoint not configured")
                 return
             
-            # 创建 Gradio 客户端并调用 API
+            # Create Gradio client and call API
             client = Client(gradio_endpoint)
             result = client.predict(
                 query=query,
                 api_name="/search"
             )
             
-            # 同时返回 text 和 json 两种格式
-            # 先返回文本格式
+            # Return both text and json formats
+            # First return text format
             if isinstance(result, (list, dict)):
                 text_result = str(result)
             else:
                 text_result = result
             yield self.create_text_message(text_result)
             
-            # 再返回 JSON 格式
+            # Then return JSON format
             yield self.create_json_message({
                 "query": query,
                 "result": result,
@@ -45,8 +45,8 @@ class AbstractsIndexTool(Tool):
             })
                 
         except Exception as e:
-            # 错误处理
-            error_msg = f"查询失败: {str(e)}"
+            # Error handling
+            error_msg = f"Query failed: {str(e)}"
             yield self.create_text_message(error_msg)
             yield self.create_json_message({
                 "query": tool_parameters.get("query", ""),
