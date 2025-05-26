@@ -1,11 +1,14 @@
-name: Plugin Publish Workflow
+name: Auto Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'abstracts-index/**'
+      - '.github/workflows/release.yml'
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,8 +36,8 @@ jobs:
           VERSION=$(grep "^version:" manifest.yaml | cut -d' ' -f2)
           echo "Plugin version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-          # If the author's name is not your github username, you can change the author here
           AUTHOR=$(grep "^author:" manifest.yaml | cut -d' ' -f2)
           echo "Plugin author: $AUTHOR"
           echo "author=$AUTHOR" >> $GITHUB_OUTPUT
@@ -50,60 +53,45 @@ jobs:
           ls -la "$PACKAGE_NAME"
           echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
 
-          echo "\nFull file path:"
-          pwd
-          echo "\nDirectory structure:"
-          tree || ls -R
-
-      - name: Checkout target repo
-        uses: actions/checkout@v3
-        with:
-          repository: ${{steps.get_basic_info.outputs.author}}/dify-plugins
-          path: dify-plugins
-          token: ${{ secrets.PLUGIN_ACTION }}
-          fetch-depth: 1
-          persist-credentials: true
-
-      - name: Prepare and create PR
-        run: |
-          PACKAGE_NAME="${{ steps.get_basic_info.outputs.plugin_name }}-${{ steps.get_basic_info.outputs.version }}.difypkg"
-          mkdir -p dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}
-          mv "$PACKAGE_NAME" dify-plugins/${{ steps.get_basic_info.outputs.author }}/${{ steps.get_basic_info.outputs.plugin_name }}/
-
-          cd dify-plugins
-
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-          git fetch origin main
-          git checkout main
-          git pull origin main
-
-          BRANCH_NAME="bump-${{ steps.get_basic_info.outputs.plugin_name }}-plugin-${{ steps.get_basic_info.outputs.version }}"
-          git checkout -b "$BRANCH_NAME"
-
-          git add .
-          git commit -m "bump ${{ steps.get_basic_info.outputs.plugin_name }} plugin to version ${{ steps.get_basic_info.outputs.version }}"
-
-          git push -u origin "$BRANCH_NAME" --force
-
-          git branch -a
-          echo "Waiting for branch to sync..."
-          sleep 10  # Wait 10 seconds for branch sync
-
-      - name: Create PR via GitHub API
+      - name: Delete existing release if exists
         env:
-          # How to config the token:
-          # 1. Profile -> Settings -> Developer settings -> Personal access tokens -> Generate new token (with repo scope) -> Copy the token
-          # 2. Go to the target repository -> Settings -> Secrets and variables -> Actions -> New repository secret -> Add the token as PLUGIN_ACTION
-          GH_TOKEN: ${{ secrets.PLUGIN_ACTION }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --repo langgenius/dify-plugins \
-            --head "${{ steps.get_basic_info.outputs.author }}:${{ steps.get_basic_info.outputs.plugin_name }}-${{ steps.get_basic_info.outputs.version }}" \
-            --base main \
-            --title "bump ${{ steps.get_basic_info.outputs.plugin_name }} plugin to version ${{ steps.get_basic_info.outputs.version }}" \
-            --body "bump ${{ steps.get_basic_info.outputs.plugin_name }} plugin package to version ${{ steps.get_basic_info.outputs.version }}
+          TAG="${{ steps.get_basic_info.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists, deleting..."
+            gh release delete "$TAG" --yes
+            git push --delete origin "$TAG" || true
+          fi
 
-            Changes:
-            - Updated plugin package file" || echo "PR already exists or creation skipped." # Handle cases where PR already exists
+      - name: Create new release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.get_basic_info.outputs.tag }}"
+          VERSION="${{ steps.get_basic_info.outputs.version }}"
+          PACKAGE_NAME="${{ steps.package.outputs.package_name }}"
+          
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## Abstracts Index Dify Plugin v${VERSION}
+          
+          ### Features
+          - Semantic search across 110 million academic publications
+          - Powered by abstracts-search with OpenAlex dataset
+          - Uses stella_en_1.5B_v5 model for embeddings
+          - FAISS indexing for fast similarity search
+          - Dual format output (text and JSON)
+          - No API keys required
+          
+          ### Installation
+          Download the \`${PACKAGE_NAME}\` file and upload it to your Dify platform.
+          
+          For detailed instructions, please refer to the [README](https://github.com/${{ github.repository }}/blob/main/abstracts-index/README.md).
+          EOF
+          
+          # Create release
+          gh release create "$TAG" \
+            --title "Abstracts Index Plugin v${VERSION}" \
+            --notes-file release_notes.md \
+            "./${PACKAGE_NAME}"
