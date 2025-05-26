@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, master ]
     paths:
-      - 'abstracts-index/**'
+      - 'manifest.yaml'
       - '.github/workflows/release.yml'
 
 permissions:
