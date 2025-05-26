@@ -70,7 +70,7 @@ All data is sourced from the OpenAlex dataset and released under open licenses.
 ## Author
 
 **Author:** bdim  
-**Version:** 0.0.2  
+**Version:** 0.0.3  
 **Type:** tool
 
 
