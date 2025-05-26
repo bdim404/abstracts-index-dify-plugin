@@ -6,8 +6,8 @@ label:
   en_US: abstracts-index
   zh_Hans: 学术摘要索引
 description:
-  en_US: A academic abstracts index plugin
-  zh_Hans: 一个学术摘要索引插件
+  en_US: A Dify plugin for semantic search across 110 million academic publications powered by abstracts-search
+  zh_Hans: 基于 abstracts-search 的语义搜索插件，可搜索 1.1 亿篇学术出版物
 icon: icon.svg
 resource:
   memory: 268435456
