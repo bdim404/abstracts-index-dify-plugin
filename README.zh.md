@@ -70,5 +70,5 @@ dify-plugin-daemon plugin package ./abstracts-index
 ## 作者
 
 **作者:** bdim  
-**版本:** 0.0.1  
+**版本:** 0.0.2  
 **类型:** tool

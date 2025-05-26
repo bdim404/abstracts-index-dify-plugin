@@ -2,13 +2,11 @@ identity:
   author: bdim
   name: abstracts-index
   label:
-    en_US: abstracts-index
-    zh_Hans: abstracts-index
-    pt_BR: abstracts-index
+    en_US: Academic Abstracts Search
+    zh_Hans: 学术摘要搜索
   description:
-    en_US: A academic abstracts index plugin
-    zh_Hans: A academic abstracts index plugin
-    pt_BR: A academic abstracts index plugin
+    en_US: Semantic search across 110 million academic publications using embeddings and FAISS indexing
+    zh_Hans: 使用嵌入向量和 FAISS 索引对 1.1 亿篇学术出版物进行语义搜索
   icon: icon.svg
 tools:
   - tools/abstracts-index.yaml

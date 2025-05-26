@@ -1,4 +1,4 @@
-version: 0.0.1
+version: 0.0.2
 type: plugin
 author: bdim
 name: abstracts-index
@@ -16,7 +16,7 @@ plugins:
   tools:
     - provider/abstracts-index.yaml
 meta:
-  version: 0.0.1
+  version: 0.0.2
   arch:
     - amd64
     - arm64
