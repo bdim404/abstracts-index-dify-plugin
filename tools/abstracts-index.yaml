@@ -1,0 +1,30 @@
+identity:
+  name: abstracts-index
+  author: bdim
+  label:
+    en_US: abstracts-index
+    zh_Hans: abstracts-index
+    pt_BR: abstracts-index
+description:
+  human:
+    en_US: A academic abstracts index plugin
+    zh_Hans: A academic abstracts index plugin
+    pt_BR: A academic abstracts index plugin
+  llm: A academic abstracts index plugin
+parameters:
+  - name: query
+    type: string
+    required: true
+    label:
+      en_US: Query string
+      zh_Hans: 查询语句
+      pt_BR: Query string
+    human_description:
+      en_US: A academic abstracts index plugin
+      zh_Hans: A academic abstracts index plugin
+      pt_BR: A academic abstracts index plugin
+    llm_description: A academic abstracts index plugin
+    form: llm
+extra:
+  python:
+    source: tools/abstracts-index.py
